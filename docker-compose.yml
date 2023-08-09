@@ -1,0 +1,39 @@
+version: '3.6'
+services:
+
+  provider:
+    restart: unless-stopped
+    image: ghcr.io/zombar/traces-demo:latest
+    entrypoint: uvicorn provider:app --host 0.0.0.0 --port 80 --root-path /api/v1
+    depends_on:
+      - redis
+    ports:
+      - 8080:80
+
+  item:
+    restart: unless-stopped
+    image: ghcr.io/zombar/traces-demo:latest
+    entrypoint: uvicorn item:app --host 0.0.0.0 --port 80 --root-path /api/v1
+    depends_on:
+      - redis
+    ports:
+      - 8081:80
+
+  redis:
+    image: redis:7.0.8
+    restart: always
+    command:
+      - --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - '8001:8001'
+    volumes:
+      - redis_insight_data:/db 
+
+volumes:
+  redis_data: null
+  redis_insight_data: null

@@ -59,19 +59,20 @@ async def rm(
 async def add(
     name: Optional[str] = Form(None),
     uid: str = Form(...),
+    quantity: Optional[int] = Form(None),
 ):
     if name:
         uid = str(uuid.uuid4())
         data = {
             "uid": uid,
             "name": name,
-            "quantity": 1,
+            "quantity": quantity,
         }
         u.add(db_name, "item", uid, json.dumps(data))
         return uid
     
     data = u.get(db_name, "item", uid)
-    data["quantity"] += 1
+    data["quantity"] = quantity
     u.rm(db_name, "item", uid)
     u.add(db_name, "item", uid, json.dumps(data))
     

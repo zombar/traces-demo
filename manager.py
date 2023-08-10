@@ -142,7 +142,10 @@ async def post(
         if len(json.loads(response.json())) == 0:
             c.delete_provider(provider_uid)
 
-    # Otherwise update the item
+            # Update the lookup table
+            del(cache[provider_name])
+
+    # Otherwise, just update the item
     c.add_item(
         uid=item_uid,
         quantity=item_data["quantity"] + quantity,

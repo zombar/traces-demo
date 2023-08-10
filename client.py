@@ -36,7 +36,7 @@ def get_item(uid):
     )
 
 
-def add_item(uid, name=None, quantity=1):
+def add_item(uid=None, name=None, quantity=1):
     return s.post(
         url(
             "/item", ITEM_HOST, ITEM_PORT
@@ -49,7 +49,7 @@ def add_item(uid, name=None, quantity=1):
     )
 
 
-def remove_item(uid):
+def delete_item(uid):
     return s.delete(
         url(
             "/item", ITEM_HOST, ITEM_PORT
@@ -79,19 +79,18 @@ def get_provider(uid):
     )
 
 
-def add_provider(uid, name=None, quantity=1):
+def add_provider(name):
     return s.post(
         url(
             "/provider", PROVIDER_HOST, PROVIDER_PORT
         ),
         data={
-            "uid": uid,
             "name": name,
         },
     )
 
 
-def remove_provider(uid):
+def delete_provider(uid):
     return s.delete(
         url(
             "/provider", PROVIDER_HOST, PROVIDER_PORT
@@ -102,7 +101,7 @@ def remove_provider(uid):
     )
 
 
-def get_provider_items(provider_uid, item_uid):
+def get_provider_items(provider_uid):
     return s.get(
         url(
             "/provider/items", PROVIDER_HOST, PROVIDER_PORT
@@ -112,7 +111,8 @@ def get_provider_items(provider_uid, item_uid):
         },
     )
 
-def add_provider_items(provider_uid, item_uid):
+
+def add_provider_item(provider_uid, item_uid):
     return s.post(
         url(
             "/provider/items", PROVIDER_HOST, PROVIDER_PORT
@@ -122,6 +122,7 @@ def add_provider_items(provider_uid, item_uid):
             "item_uid": item_uid,
         },
     )
+
 
 def delete_provider_items(provider_uid, item_uid):
     return s.delete(

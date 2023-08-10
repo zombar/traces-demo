@@ -58,9 +58,12 @@ async def rm(
 @app.post("/item", tags=["item", "add"])
 async def add(
     name: Optional[str] = Form(None),
-    uid: str = Form(...),
+    uid: Optional[str] = Form(None),
     quantity: int = Form(...),
 ):
+    if not name and not uid:
+        raise HTTPException(status_code=400, detail="either a name or uid must be specified")
+
     if name:
         uid = str(uuid.uuid4())
         data = {

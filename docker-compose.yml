@@ -1,14 +1,21 @@
 version: '3.6'
 services:
 
+  manager:
+    restart: unless-stopped
+    image: ghcr.io/zombar/traces-demo:latest
+    entrypoint: uvicorn manager:app --host 0.0.0.0 --port 80 --root-path /api/v1
+    depends_on:
+      - redis
+    ports:
+      - 8080:80
+
   provider:
     restart: unless-stopped
     image: ghcr.io/zombar/traces-demo:latest
     entrypoint: uvicorn provider:app --host 0.0.0.0 --port 80 --root-path /api/v1
     depends_on:
       - redis
-    ports:
-      - 8080:80
 
   item:
     restart: unless-stopped
@@ -16,8 +23,6 @@ services:
     entrypoint: uvicorn item:app --host 0.0.0.0 --port 80 --root-path /api/v1
     depends_on:
       - redis
-    ports:
-      - 8081:80
 
   redis:
     image: redis:7.0.8

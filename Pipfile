@@ -8,6 +8,7 @@ redis = "*"
 fastapi = "*"
 prometheus-fastapi-instrumentator = "*"
 python-multipart = "*"
+requests = "*"
 
 [dev-packages]
 

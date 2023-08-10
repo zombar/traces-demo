@@ -41,37 +41,41 @@ async def health():
     return {"health": "OK"}
 
 
-@app.get("/item/get", tags=["item", "get"])
+@app.get("/item", tags=["item", "get"])
 async def get(
     uid: Optional[str] = Form(None),
 ):
     return u.get(db_name, "item", uid)
 
 
-@app.delete("/item/remove", tags=["item", "remove"])
+@app.delete("/item", tags=["item", "remove"])
 async def rm(
     uid: str = Form(...),
 ):
     u.rm(db_name, "item", uid)
 
 
-@app.post("/item/add", tags=["item", "add"])
+@app.post("/item", tags=["item", "add"])
 async def add(
     name: Optional[str] = Form(None),
-    uid: str = Form(...),
+    uid: Optional[str] = Form(None),
+    quantity: int = Form(...),
 ):
+    if not name and not uid:
+        raise HTTPException(status_code=400, detail="either a name or uid must be specified")
+
     if name:
         uid = str(uuid.uuid4())
         data = {
             "uid": uid,
             "name": name,
-            "quantity": 1,
+            "quantity": quantity,
         }
         u.add(db_name, "item", uid, json.dumps(data))
         return uid
     
     data = u.get(db_name, "item", uid)
-    data["quantity"] += 1
+    data["quantity"] = quantity
     u.rm(db_name, "item", uid)
     u.add(db_name, "item", uid, json.dumps(data))
     

@@ -14,6 +14,8 @@ class GracefulKiller:
         signal.signal(signal.SIGTERM, self.exit_gracefully)
 
     def exit_gracefully(self, signum, frame):
+        global terminating
+        terminating = True
         log.warning("closing api (%s)" % (signum))
         sys.exit(0)
 

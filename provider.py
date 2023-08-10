@@ -46,21 +46,21 @@ async def health():
     return {"health": "OK"}
 
 
-@app.get("/provider/get", tags=["provider", "get"])
+@app.get("/provider", tags=["provider", "get"])
 async def get(
     uid: Optional[str] = Form(None),
 ):
     return u.get(db_name, "provider", uid)
 
 
-@app.delete("/provider/remove", tags=["provider", "remove"])
+@app.delete("/provider", tags=["provider", "remove"])
 async def rm(
     uid: str = Form(...),
 ):
     u.rm(db_name, "provider", uid)
 
 
-@app.post("/provider/add", tags=["provider", "add"])
+@app.post("/provider", tags=["provider", "add"])
 async def add(
     name: str = Form(...),
 ):
@@ -73,7 +73,7 @@ async def add(
     return uid
 
 
-@app.post("/provider/items/add", tags=["provider", "item", "add"])
+@app.post("/provider/items", tags=["provider", "item", "add"])
 async def add_item(
     provider_uid: str = Form(...),
     item_uid: str = Form(...),
@@ -84,7 +84,7 @@ async def add_item(
     u.add_to_list(db_name, "items.%s" % provider_uid, item_uid)
 
 
-@app.delete("/provider/items/remove", tags=["provider", "item", "remove"])
+@app.delete("/provider/items", tags=["provider", "item", "remove"])
 async def rm_item(
     provider_uid: str = Form(...),
     item_uid: str = Form(...),
@@ -95,7 +95,7 @@ async def rm_item(
     u.rm_from_list(db_name, "items.%s" % provider_uid, item_uid)
 
 
-@app.get("/provider/items/get", tags=["provider", "item", "get"])
+@app.get("/provider/items", tags=["provider", "item", "get"])
 async def get_item(
     provider_uid: str = Form(...),
 ):

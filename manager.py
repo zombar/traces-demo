@@ -1,4 +1,4 @@
-import json, uuid
+import json, uuid, requests
 
 from typing import Optional
 from fastapi import FastAPI, Form, HTTPException
@@ -32,6 +32,8 @@ Instrumentator().instrument(app).expose(app)
 
 log = u.init_logger(name)
 log.info("starting app ...")
+
+
 
 @app.get("/health")
 async def health():

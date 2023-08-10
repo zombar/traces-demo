@@ -41,25 +41,25 @@ async def health():
     return {"health": "OK"}
 
 
-@app.get("/item/get", tags=["item", "get"])
+@app.get("/item", tags=["item", "get"])
 async def get(
     uid: Optional[str] = Form(None),
 ):
     return u.get(db_name, "item", uid)
 
 
-@app.delete("/item/remove", tags=["item", "remove"])
+@app.delete("/item", tags=["item", "remove"])
 async def rm(
     uid: str = Form(...),
 ):
     u.rm(db_name, "item", uid)
 
 
-@app.post("/item/add", tags=["item", "add"])
+@app.post("/item", tags=["item", "add"])
 async def add(
     name: Optional[str] = Form(None),
     uid: str = Form(...),
-    quantity: Optional[int] = Form(None),
+    quantity: int = Form(...),
 ):
     if name:
         uid = str(uuid.uuid4())

@@ -18,6 +18,8 @@ services:
       - item
     ports:
       - 8080:80
+    environment:
+      WAIT_ENABLED: true
 
   provider:
     restart: unless-stopped
@@ -25,6 +27,8 @@ services:
     entrypoint: uvicorn provider:app --host 0.0.0.0 --port 80
     depends_on:
       - redis
+    environment:
+      WAIT_ENABLED: true
 
   item:
     restart: unless-stopped
@@ -32,6 +36,8 @@ services:
     entrypoint: uvicorn item:app --host 0.0.0.0 --port 80
     depends_on:
       - redis
+    environment:
+      WAIT_ENABLED: true
 
   redis:
     image: redis:7.0.8

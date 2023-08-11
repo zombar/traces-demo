@@ -6,12 +6,41 @@ PROVIDER_HOST = os.getenv("PROVIDER_API_HOST", "provider")
 PROVIDER_PORT = os.getenv("PROVIDER_API_PORT", "80")
 ITEM_HOST = os.getenv("ITEM_API_HOST", "item")
 ITEM_PORT = os.getenv("ITEM_API_PORT", "80")
+MANAGER_HOST = os.getenv("MANAGER_API_HOST", "manager")
+MANAGER_PORT = os.getenv("MANAGER_API_PORT", "80")
 
 s = requests.Session()
 
 
 def url(path, host, port):
     return "http://%s:%s%s" % (host, port, path)
+
+
+# EXTERNAL API
+
+
+def get_inventory(provider_name):
+    return s.get(
+        url(
+            "/inventory", MANAGER_HOST, MANAGER_PORT
+        ),
+        data={
+            "provider_name": provider_name,
+        },
+    )
+
+
+def update_inventory(provider_name, item_name, quantity):
+    return s.post(
+        url(
+            "/inventory", MANAGER_HOST, MANAGER_PORT
+        ),
+        data={
+            "provider_name": provider_name,
+            "item_name": item_name,
+            "quantity": quantity,
+        },
+    )
 
 
 # INTERNAL API

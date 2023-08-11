@@ -1,10 +1,13 @@
 import redis as r
 
-import logging, os, json, sys, signal
+import logging, os, json, sys, signal, time, random
 
 db = {}
 log = None
 log_level = os.environ.get("LOG_LEVEL", "DEBUG")
+wait_enabled = os.environ.get("WAIT_ENABLED", "false").upper() == "TRUE"
+min_wait = float(os.environ.get("MIN_WAIT_MS", "25")) / 1000
+max_wait = float(os.environ.get("MAX_WAIT_MS", "250")) / 1000
 
 class GracefulKiller:
     terminating = False
@@ -45,6 +48,11 @@ def init_db(db_name, host, port):
 
 
 def add(db_name, topic, uid, data):
+    
+    # 33% chance to sleep for a bit
+    if wait_enabled and random.randrange(0, 100) <= 33:
+        time.sleep(random.uniform(min_wait, max_wait))
+
     if type(data) is not str:
         raise Exception("'data' should be string")
     
@@ -62,6 +70,11 @@ def add(db_name, topic, uid, data):
 
 
 def get(db_name, topic, uid):
+        
+    if wait_enabled:
+        # sleep for a bit
+        time.sleep(random.uniform(min_wait, max_wait))
+
     if db_name not in db:
         raise Exception("db %s does not exist" % db_name)
     
@@ -90,6 +103,11 @@ def get(db_name, topic, uid):
 
 
 def rm(db_name, topic, uid=None):
+        
+    if wait_enabled:
+        # sleep for a bit
+        time.sleep(random.uniform(min_wait, max_wait))
+
     if db_name not in db:
         raise Exception("db %s does not exist" % db_name)
     
@@ -105,6 +123,11 @@ def rm(db_name, topic, uid=None):
 
 
 def add_to_list(db_name, key, uid):
+        
+    if wait_enabled:
+        # sleep for a bit
+        time.sleep(random.uniform(min_wait, max_wait))
+
     if db_name not in db:
         raise Exception("db %s does not exist" % db_name)
 
@@ -112,6 +135,11 @@ def add_to_list(db_name, key, uid):
 
 
 def rm_from_list(db_name, key, uid):
+        
+    if wait_enabled:
+        # sleep for a bit
+        time.sleep(random.uniform(min_wait, max_wait))
+
     if db_name not in db:
         raise Exception("db %s does not exist" % db_name)
     
@@ -119,6 +147,11 @@ def rm_from_list(db_name, key, uid):
 
 
 def get_list(db_name, key):
+        
+    if wait_enabled:
+        # sleep for a bit
+        time.sleep(random.uniform(min_wait, max_wait))
+
     if db_name not in db:
         raise Exception("db %s does not exist" % db_name)
     

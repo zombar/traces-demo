@@ -1,4 +1,0 @@
-**/*.md
-*.json
-build.sh
-docker-compose.yml

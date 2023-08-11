@@ -65,7 +65,7 @@ async def get(
 ):
     
     if provider_name not in cache:
-        raise HTTPException(status_code=422, detail="provider %s not found" % provider_name)
+        raise HTTPException(status_code=400, detail="provider %s not found" % provider_name)
     
     data = {
         "uid": cache[provider_name]["uid"],
@@ -90,11 +90,11 @@ async def post(
 
     # Fail if we're trying to decrement item for a provider that doesn't exist
     if quantity < 0 and provider_name not in cache:
-        raise HTTPException(status_code=422, detail="provider %s not found" % provider_name)
+        raise HTTPException(status_code=400, detail="provider %s not found" % provider_name)
 
     # Fail if we're trying to decrement item for a provider that doesn't have the item
     if quantity < 0 and item_name not in cache[provider_name]["items"]:
-        raise HTTPException(status_code=422, detail="item %s not found" % item_name)
+        raise HTTPException(status_code=400, detail="item %s not found" % item_name)
 
     # Otherwise add the provider if they don't exit
     if provider_name not in cache:
@@ -132,7 +132,7 @@ async def post(
 
     # Fail if we don't have adequate stock
     if item_data["quantity"] + quantity < 0:
-        raise HTTPException(status_code=422, detail="provider %s has not enough stock of item %s" % (provider_name, item_name))
+        raise HTTPException(status_code=400, detail="provider %s has not enough stock of item %s" % (provider_name, item_name))
 
     # If we have just given out the last of the item, cleanup
     if item_data["quantity"] + quantity == 0:

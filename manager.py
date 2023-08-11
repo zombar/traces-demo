@@ -15,7 +15,7 @@ tags_metadata = [
     },
     {
         "name": "update",
-        "description": "Update item quantity and provider (if doesn't exist) to the database via name, if provider has no more items we remove them from the system",
+        "description": "Add provider (if doesn't exist) and add/update item quantity to the database via name, if provider has no more items we remove them from the system",
     },
     {
         "name": "get",

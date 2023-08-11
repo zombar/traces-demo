@@ -11,5 +11,5 @@ RUN pipenv install --system --deploy
 RUN pip install "uvicorn[standard]"
 
 COPY ./*.py /app/
-ENTRYPOINT ["python", "utils.py"]
+ENTRYPOINT ["python", "demo.py"]
 EOF

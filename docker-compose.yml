@@ -1,6 +1,14 @@
 version: '3.6'
 services:
 
+  client:
+    deploy:
+      replicas: 3
+    restart: unless-stopped
+    image: ghcr.io/zombar/traces-demo:latest
+    depends_on:
+      - manager
+
   manager:
     restart: unless-stopped
     image: ghcr.io/zombar/traces-demo:latest

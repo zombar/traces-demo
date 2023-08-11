@@ -16,6 +16,7 @@ up: ## Bring up the docker dev stack
 	@./build.sh
 	@echo "---> [Executing docker-compose up]"
 	@docker-compose up --detach --remove-orphans
+	@docker-compose logs -f
 
 down: ## Bring down the docker dev stack
 	@echo "---> [Executing docker-compose down]"
@@ -23,4 +24,3 @@ down: ## Bring down the docker dev stack
 
 help:
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {sub("\\\\n",sprintf("\n%22c"," "), $$2);printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-	

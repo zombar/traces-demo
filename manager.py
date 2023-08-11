@@ -1,6 +1,5 @@
-import json, uuid
+import json
 
-from typing import Optional
 from fastapi import FastAPI, Form, HTTPException
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -46,7 +45,7 @@ for provider in response.json():
     # Add providers items to local lookup
     for uid in response.json():
         item_response = c.get_item(uid)
-        data = json.loads(item_response.json())
+        data = item_response.json()
 
         if "items" not in cache[provider["name"]]:
             cache[provider["name"]]["items"] = {}
@@ -76,10 +75,10 @@ async def get(
 
     for item_name in cache[provider_name]["items"]:
         item_uid = cache[provider_name]["items"][item_name]
-        item_data = c.get_item(item_uid)
-        data.items.append(item_data)
+        response = c.get_item(item_uid)
+        data["items"].append(response.json())
 
-    return json.dumps(data)
+    return data
 
 
 @app.post("/inventory", tags=["manager", "add"])
@@ -90,7 +89,7 @@ async def post(
 ):
 
     # Fail if we're trying to decrement item for a provider that doesn't exist
-    if quantity < 0 and provider_name not in cache[provider_name]:
+    if quantity < 0 and provider_name not in cache:
         raise HTTPException(status_code=422, detail="provider %s not found" % provider_name)
 
     # Fail if we're trying to decrement item for a provider that doesn't have the item
@@ -99,18 +98,24 @@ async def post(
 
     # Otherwise add the provider if they don't exit
     if provider_name not in cache:
-        provider_uid = c.add_provider(provider_name)
-        cache[provider_name] = {}
-        cache[provider_name]["uid"] = provider_uid
+        log.info("adding new provider %s" % provider_name)
+        response = c.add_provider(provider_name)
+        provider_uid = response.json()
+        cache[provider_name] = {
+            "uid": provider_uid,
+            "items": {},
+        }
 
     provider_uid = cache[provider_name]["uid"]
 
     # Add item to system if it is new
-    if item_name not in cache[provider_name]:
-        item_uid = c.add_item(
+    if item_name not in cache[provider_name]["items"]:
+        log.info("adding new item %s" % item_name)
+        response = c.add_item(
             name=item_name,
             quantity=quantity,
         )
+        item_uid = response.json()
         c.add_provider_item(provider_uid, item_uid)
 
         # Update local lookup table
@@ -123,7 +128,7 @@ async def post(
     item_uid = cache[provider_name]["items"][item_name]
 
     response = c.get_item(item_uid)
-    item_data = json.loads(response.json())
+    item_data = response.json()
 
     # Fail if we don't have adequate stock
     if item_data["quantity"] + quantity < 0:
@@ -131,6 +136,7 @@ async def post(
 
     # If we have just given out the last of the item, cleanup
     if item_data["quantity"] + quantity == 0:
+        log.info("no more stock of item %s, deleting ..." % item_name)
         c.delete_item(item_uid)
         c.delete_provider_items(provider_uid, item_uid)
 
@@ -139,7 +145,8 @@ async def post(
 
         # Delete the provider if they have no more items
         response = c.get_provider_items(provider_uid)
-        if len(json.loads(response.json())) == 0:
+        if len(response.json()) == 0:
+            log.info("provider %s has no more items, deleting ..." % provider_name)
             c.delete_provider(provider_uid)
 
             # Update the lookup table

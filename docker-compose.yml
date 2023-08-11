@@ -4,7 +4,7 @@ services:
   manager:
     restart: unless-stopped
     image: ghcr.io/zombar/traces-demo:latest
-    entrypoint: uvicorn manager:app --host 0.0.0.0 --port 80 --root-path /api/v1
+    entrypoint: uvicorn manager:app --host 0.0.0.0 --port 80
     depends_on:
       - provider
       - item
@@ -14,14 +14,14 @@ services:
   provider:
     restart: unless-stopped
     image: ghcr.io/zombar/traces-demo:latest
-    entrypoint: uvicorn provider:app --host 0.0.0.0 --port 80 --root-path /api/v1
+    entrypoint: uvicorn provider:app --host 0.0.0.0 --port 80
     depends_on:
       - redis
 
   item:
     restart: unless-stopped
     image: ghcr.io/zombar/traces-demo:latest
-    entrypoint: uvicorn item:app --host 0.0.0.0 --port 80 --root-path /api/v1
+    entrypoint: uvicorn item:app --host 0.0.0.0 --port 80
     depends_on:
       - redis
 
@@ -40,6 +40,33 @@ services:
     volumes:
       - redis_insight_data:/db 
 
+  grafana:
+    image: grafana/grafana:10.0.3
+    restart: always
+    volumes:
+      - ./monitoring/config.ini:/etc/grafana/grafana.ini
+      - ./monitoring/datasource.yml:/etc/grafana/provisioning/datasources/default.yaml
+      - ./monitoring/dashboard.yml:/etc/grafana/provisioning/dashboards/default.yaml
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.37.9
+    restart: always
+    command:
+      - --storage.tsdb.retention.time=30d
+      - --storage.tsdb.path=/prometheus
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus:rw
+    ports:
+      - 9090:9090
+
 volumes:
   redis_data: null
   redis_insight_data: null
+  prometheus_data: null

@@ -988,5 +988,6 @@
     "timezone": "",
     "title": "API stats",
     "version": 1,
+    "uid": "api-v1",
     "weekStart": ""
   }

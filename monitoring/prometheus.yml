@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 1s
+scrape_configs:
+  - job_name: "manager"
+    static_configs:
+      - targets: ["manager:80"]
+  - job_name: "item"
+    static_configs:
+      - targets: ["item:80"]
+  - job_name: "provider"
+    static_configs:
+      - targets: ["provider:80"]

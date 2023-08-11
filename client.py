@@ -19,18 +19,21 @@ def url(path, host, port):
 # EXTERNAL API
 
 
-def get_inventory():
+def get_inventory(provider_name):
     return s.get(
         url(
-            "/inventory", ITEM_HOST, ITEM_PORT
+            "/inventory", MANAGER_HOST, MANAGER_PORT
         ),
+        data={
+            "provider_name": provider_name,
+        },
     )
 
 
 def update_inventory(provider_name, item_name, quantity):
     return s.post(
         url(
-            "/item", ITEM_HOST, ITEM_PORT
+            "/inventory", MANAGER_HOST, MANAGER_PORT
         ),
         data={
             "provider_name": provider_name,

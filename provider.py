@@ -52,7 +52,7 @@ async def health():
 async def get(
     uid: Optional[str] = Form(None),
 ):
-    with tracer.start_span("get") as spanA:
+    with tracer.start_active_span("get") as spanA:
         spanA.set_tag("uid", uid)
         return u.get(db_name, "provider", uid)
 
@@ -61,7 +61,7 @@ async def get(
 async def rm(
     uid: str = Form(...),
 ):
-    with tracer.start_span("delete") as spanA:
+    with tracer.start_active_span("delete") as spanA:
         spanA.set_tag("uid", uid)
         u.rm(db_name, "provider", uid)
 
@@ -70,7 +70,7 @@ async def rm(
 async def add(
     name: str = Form(...),
 ):
-    with tracer.start_span("add") as spanA:
+    with tracer.start_active_span("add") as spanA:
         uid = str(uuid.uuid4())
         data = {
             "uid": uid,
@@ -87,7 +87,7 @@ async def add_item(
     provider_uid: str = Form(...),
     item_uid: str = Form(...),
 ):
-    with tracer.start_span("add_item") as spanA:
+    with tracer.start_active_span("add_item") as spanA:
         spanA.set_tag("uid", provider_uid)
         spanA.set_tag("uid", item_uid)
 
@@ -102,7 +102,7 @@ async def rm_item(
     provider_uid: str = Form(...),
     item_uid: str = Form(...),
 ):
-    with tracer.start_span("remove_item") as spanA:
+    with tracer.start_active_span("remove_item") as spanA:
         spanA.set_tag("uid", provider_uid)
         spanA.set_tag("uid", item_uid)
 
@@ -116,7 +116,7 @@ async def rm_item(
 async def get_item(
     provider_uid: str = Form(...),
 ):
-    with tracer.start_span("get_item") as spanA:
+    with tracer.start_active_span("get_item") as spanA:
         spanA.set_tag("uid", provider_uid)
     
         if not u.get(db_name, "provider", provider_uid):

@@ -47,7 +47,7 @@ async def health():
 async def get(
     uid: Optional[str] = Form(None),
 ):
-    with tracer.start_span("get") as spanA:
+    with tracer.start_active_span("get") as spanA:
         spanA.set_tag("uid", uid)
         return u.get(db_name, "item", uid)
 
@@ -56,7 +56,7 @@ async def get(
 async def rm(
     uid: str = Form(...),
 ):
-    with tracer.start_span("rm") as spanA:
+    with tracer.start_active_span("rm") as spanA:
         spanA.set_tag("uid", uid)
         u.rm(db_name, "item", uid)
 
@@ -67,7 +67,7 @@ async def add(
     uid: Optional[str] = Form(None),
     quantity: int = Form(...),
 ):
-    with tracer.start_span("add") as spanA:
+    with tracer.start_active_span("add") as spanA:
     
         if not name and not uid:
             raise HTTPException(status_code=400, detail="either a name or uid must be specified")

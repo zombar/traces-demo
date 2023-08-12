@@ -34,7 +34,7 @@ log.info("starting app ...")
 cache = {}
 
 # Build local lookup table
-with tracer.start_span("build_lookups") as span:
+with tracer.start_active_span("build_lookups") as span:
     response = c.get_providers()
 
     for provider in response.json():
@@ -66,7 +66,7 @@ async def health():
 async def get(
     provider_name: str = Form(...),
 ):
-    with tracer.start_span("get") as spanA:
+    with tracer.start_active_span("get") as spanA:
         
         if provider_name not in cache:
             raise HTTPException(status_code=400, detail="provider %s not found" % provider_name)
@@ -96,7 +96,7 @@ async def post(
     quantity: int = Form(...),
 ):
 
-    with tracer.start_span("update") as spanA:
+    with tracer.start_active_span("update") as spanA:
 
         # Fail if we're trying to decrement item for a provider that doesn't exist
         if quantity < 0 and provider_name not in cache:

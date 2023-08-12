@@ -66,13 +66,17 @@ async def health():
 async def get(
     provider_name: str = Form(...),
 ):
-    with tracer.start_span("get") as span:
+    with tracer.start_span("get") as spanA:
         
         if provider_name not in cache:
             raise HTTPException(status_code=400, detail="provider %s not found" % provider_name)
         
+        provider_uid = cache[provider_name]["uid"]
+        spanA.set_tag("uid", provider_uid)
+        spanA.set_tag("name", provider_name)
+
         data = {
-            "uid": cache[provider_name]["uid"],
+            "uid": provider_uid,
             "name": provider_name,
             "items": [],
         }
@@ -108,6 +112,7 @@ async def post(
             log.info("adding new provider %s" % provider_name)
             response = c.add_provider(provider_name)
             provider_uid = response.json()
+            spanB.set_tag("uid", provider_uid)
             cache[provider_name] = {
                 "uid": provider_uid,
                 "items": {},
@@ -125,6 +130,9 @@ async def post(
                 quantity=quantity,
             )
             item_uid = response.json()
+            spanC.set_tag("uid", item_uid)
+            spanC.set_tag("name", item_name)
+            spanC.set_tag("quantity", quantity)
             c.add_provider_item(provider_uid, item_uid)
 
             # Update local lookup table
@@ -150,6 +158,8 @@ async def post(
             log.info("no more stock of item %s, deleting ..." % item_name)
             c.delete_item(item_uid)
             c.delete_provider_items(provider_uid, item_uid)
+            spanD.set_tag("provider_uid", provider_uid)
+            spanD.set_tag("item_uid", item_uid)
 
             # Update the lookup table
             del(cache[provider_name]["items"][item_name])
@@ -161,6 +171,7 @@ async def post(
                 spanE = tracer.start_span("delete_provider")
                 log.info("provider %s has no more items, deleting ..." % provider_name)
                 c.delete_provider(provider_uid)
+                spanE.set_tag("provider_uid", provider_uid)
 
                 # Update the lookup table
                 del(cache[provider_name])
@@ -168,8 +179,11 @@ async def post(
 
         # Otherwise, just update the item
         spanF = tracer.start_span("update_item")
+        new_quantity = item_data["quantity"] + quantity
+        spanF.set_tag("uid", provider_uid)
+        spanF.set_tag("quantity", new_quantity)
         c.add_item(
             uid=item_uid,
-            quantity=item_data["quantity"] + quantity,
+            quantity=new_quantity,
         )
         spanF.finish()

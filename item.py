@@ -47,8 +47,8 @@ async def health():
 async def get(
     uid: Optional[str] = Form(None),
 ):
-    with tracer.start_span("get") as span:
-
+    with tracer.start_span("get") as spanA:
+        spanA.set_tag("uid", uid)
         return u.get(db_name, "item", uid)
 
 
@@ -56,8 +56,8 @@ async def get(
 async def rm(
     uid: str = Form(...),
 ):
-    with tracer.start_span("rm") as span:
-
+    with tracer.start_span("rm") as spanA:
+        spanA.set_tag("uid", uid)
         u.rm(db_name, "item", uid)
 
 
@@ -81,11 +81,16 @@ async def add(
                 "name": name,
                 "quantity": quantity,
             }
+            spanB.set_tag("uid", uid)
+            spanB.set_tag("name", name)
+            spanB.set_tag("quantity", quantity)
             u.add(db_name, "item", uid, json.dumps(data))
             spanB.finish()
             return uid
         
         spanC = tracer.start_span("update")
+        spanB.set_tag("uid", uid)
+        spanB.set_tag("quantity", quantity)
         data = u.get(db_name, "item", uid)
         data["quantity"] = quantity
         u.rm(db_name, "item", uid)

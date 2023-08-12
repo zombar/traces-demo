@@ -9,6 +9,7 @@ fastapi = "*"
 prometheus-fastapi-instrumentator = "*"
 python-multipart = "*"
 requests = "*"
+jaeger-client = "*"
 
 [dev-packages]
 

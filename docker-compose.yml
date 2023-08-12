@@ -18,8 +18,6 @@ services:
       - item
     ports:
       - 8080:80
-    environment:
-      WAIT_ENABLED: true
 
   provider:
     restart: unless-stopped

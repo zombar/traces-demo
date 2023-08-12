@@ -1,9 +1,11 @@
 import redis as r
 
 import logging, os, json, sys, signal, time, random
+from jaeger_client import Config
 
 db = {}
 log = None
+tracer = None
 log_level = os.environ.get("LOG_LEVEL", "DEBUG")
 wait_enabled = os.environ.get("WAIT_ENABLED", "false").upper() == "TRUE"
 min_wait = float(os.environ.get("MIN_WAIT_MS", "25")) / 1000
@@ -23,6 +25,7 @@ class GracefulKiller:
         sys.exit(0)
 
 ctx = GracefulKiller()
+
 
 def init_logger(name):
     global log
@@ -45,6 +48,21 @@ def init_db(db_name, host, port):
         port=port,
         decode_responses=True,
     )
+
+
+def init_tracer(service):
+    global tracer
+    config = Config(
+        config={
+            'sampler': {
+                'type': 'const',
+                'param': 1,
+            },
+            'logging': True,
+        },
+        service_name=service,
+    )
+    return config.initialize_tracer()
 
 
 def add(db_name, topic, uid, data):

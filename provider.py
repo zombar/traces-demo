@@ -35,6 +35,8 @@ app = FastAPI(openapi_tags=tags_metadata)
 Instrumentator().instrument(app).expose(app)
 
 log = u.init_logger(name)
+tracer = u.init_tracer("provider")
+
 log.info("starting app ...")
 
 u.init_db("provider", "redis", 6379)
@@ -50,27 +52,33 @@ async def health():
 async def get(
     uid: Optional[str] = Form(None),
 ):
-    return u.get(db_name, "provider", uid)
+    with tracer.start_span("get") as span:
+
+        return u.get(db_name, "provider", uid)
 
 
 @app.delete("/provider", tags=["provider", "remove"])
 async def rm(
     uid: str = Form(...),
 ):
-    u.rm(db_name, "provider", uid)
+    with tracer.start_span("delete") as span:
+        
+        u.rm(db_name, "provider", uid)
 
 
 @app.post("/provider", tags=["provider", "add"])
 async def add(
     name: str = Form(...),
 ):
-    uid = str(uuid.uuid4())
-    data = {
-        "uid": uid,
-        "name": name,
-    }
-    u.add(db_name, "provider", uid, json.dumps(data))
-    return uid
+    with tracer.start_span("add") as span:
+    
+        uid = str(uuid.uuid4())
+        data = {
+            "uid": uid,
+            "name": name,
+        }
+        u.add(db_name, "provider", uid, json.dumps(data))
+        return uid
 
 
 @app.post("/provider/items", tags=["provider", "item", "add"])
@@ -78,10 +86,12 @@ async def add_item(
     provider_uid: str = Form(...),
     item_uid: str = Form(...),
 ):
-    if not u.get(db_name, "provider", provider_uid):
-        raise HTTPException(status_code=400, detail="provider uid not found in db")
+    with tracer.start_span("add_item") as span:
 
-    u.add_to_list(db_name, "items.%s" % provider_uid, item_uid)
+        if not u.get(db_name, "provider", provider_uid):
+            raise HTTPException(status_code=400, detail="provider uid not found in db")
+
+        u.add_to_list(db_name, "items.%s" % provider_uid, item_uid)
 
 
 @app.delete("/provider/items", tags=["provider", "item", "remove"])
@@ -89,17 +99,21 @@ async def rm_item(
     provider_uid: str = Form(...),
     item_uid: str = Form(...),
 ):
-    if not u.get(db_name, "provider", provider_uid):
-        raise HTTPException(status_code=400, detail="provider uid not found in db")
+    with tracer.start_span("remove_item") as span:
 
-    u.rm_from_list(db_name, "items.%s" % provider_uid, item_uid)
+        if not u.get(db_name, "provider", provider_uid):
+            raise HTTPException(status_code=400, detail="provider uid not found in db")
+
+        u.rm_from_list(db_name, "items.%s" % provider_uid, item_uid)
 
 
 @app.get("/provider/items", tags=["provider", "item", "get"])
 async def get_item(
     provider_uid: str = Form(...),
 ):
-    if not u.get(db_name, "provider", provider_uid):
-        raise HTTPException(status_code=400, detail="provider uid not found in db")
+    with tracer.start_span("get_item") as span:
+    
+        if not u.get(db_name, "provider", provider_uid):
+            raise HTTPException(status_code=400, detail="provider uid not found in db")
 
-    return u.get_list(db_name, "items.%s" % provider_uid)
+        return u.get_list(db_name, "items.%s" % provider_uid)

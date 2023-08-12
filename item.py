@@ -31,6 +31,8 @@ app = FastAPI(openapi_tags=tags_metadata)
 Instrumentator().instrument(app).expose(app)
 
 log = u.init_logger(name)
+tracer = u.init_tracer("item")
+
 log.info("starting app ...")
 
 u.init_db("item", "redis", 6379)
@@ -45,14 +47,18 @@ async def health():
 async def get(
     uid: Optional[str] = Form(None),
 ):
-    return u.get(db_name, "item", uid)
+    with tracer.start_span("get") as span:
+
+        return u.get(db_name, "item", uid)
 
 
 @app.delete("/item", tags=["item", "remove"])
 async def rm(
     uid: str = Form(...),
 ):
-    u.rm(db_name, "item", uid)
+    with tracer.start_span("rm") as span:
+
+        u.rm(db_name, "item", uid)
 
 
 @app.post("/item", tags=["item", "add"])
@@ -61,21 +67,28 @@ async def add(
     uid: Optional[str] = Form(None),
     quantity: int = Form(...),
 ):
-    if not name and not uid:
-        raise HTTPException(status_code=400, detail="either a name or uid must be specified")
-
-    if name:
-        uid = str(uuid.uuid4())
-        data = {
-            "uid": uid,
-            "name": name,
-            "quantity": quantity,
-        }
-        u.add(db_name, "item", uid, json.dumps(data))
-        return uid
+    with tracer.start_span("add") as spanA:
     
-    data = u.get(db_name, "item", uid)
-    data["quantity"] = quantity
-    u.rm(db_name, "item", uid)
-    u.add(db_name, "item", uid, json.dumps(data))
+        if not name and not uid:
+            raise HTTPException(status_code=400, detail="either a name or uid must be specified")
+
+        if name:
+
+            spanB = tracer.start_span("new")
+            uid = str(uuid.uuid4())
+            data = {
+                "uid": uid,
+                "name": name,
+                "quantity": quantity,
+            }
+            u.add(db_name, "item", uid, json.dumps(data))
+            spanB.finish()
+            return uid
+        
+        spanC = tracer.start_span("update")
+        data = u.get(db_name, "item", uid)
+        data["quantity"] = quantity
+        u.rm(db_name, "item", uid)
+        u.add(db_name, "item", uid, json.dumps(data))
+        spanC.finish()
     
